@@ -9,17 +9,39 @@ from numpy import genfromtxt, savetxt
 from sklearn import datasets
 from sklearn.ensemble import RandomForestClassifier
 
-# iris = Image.open(path).convert('L')
 df = pd.read_csv("updated_scoring2.csv", delimiter=';')
-features = pd.DataFrame(df, columns=['positive_tumor_cells', 'pic'])
+# Species
+tumor_groups = pd.DataFrame(df, columns=['positive_tumor_cells', 'pic'])
+# Список файлов
+pic_names = pd.DataFrame(df, columns=['pic'])
 
-print(features)
+# Открываем все файлы, разбираем их на вектора, прописываем как фичеры в датафрейм c 512x512 колонками
+dir_path = ''
+features = pd.DataFrame(columns=range(262144))
+# print(features.head())
+for pic in pic_names:
+    pic_path = dir_path + pic
+    image = Image.open(pic_path).convert('L')
+    image = np.array(image)
+
+    # print(image.view())
+    # print(image.shape)
+
+    # Мини-датафрейм под каждый вектор - присоединяем к основному
+    image_line = np.reshape(image, image.shape[0]*image.shape[1])
+    f = pd.DataFrame(image_line, columns=range(len(image_line)))
+    features.append(f, ignore_index=True)
+    print(pic, image_line.shape)
 
 
+print(features.head())
 
-# # df['is_train'] = np.random.uniform(0, 1, len(df)) <= .75
-# # df['species'] = pd.Factor(iris.target, iris.target_names)
-# df.head() 
+df['is_train'] = np.random.uniform(0, 1, len(df)) <= .75
+print(df.head())
+
+# df['positive_tumor_cells'] = pd.Factor(iris.target, iris.target_names)
+
+df.head()
 
 # # train, test = df[df['is_train']==True], df[df['is_train']==False]
 
